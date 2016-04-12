@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trail Damage Map with Knockout</title>
+    <style>
+        #map {
+            width: 800px;
+            height: 500px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td {
+            width: 50%;
+            text-align: left;
+            border: 1px solid black;
+        }
+
+        #navcontainer ul {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+            text-align: left;
+        }
+
+            #navcontainer ul li {
+                display: inline;
+            }
+
+        #filterskills ul {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+            text-align: left;
+        }
+
+            #filterskills ul li {
+                display: inline;
+            }
+    </style>
+    <link rel="stylesheet" type="text/css" href="css/table.css">
+    <script type='text/javascript' src='scripts/knockout-3.2.0.js'></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBD7cviXYm1q4L-LS6IYlCuFSYn-uIOxUI">
+    </script>
+    <script type="text/javascript" src="trailObjs.js"></script>
+    <script type="text/javascript" src="viewmodels/mapViewModel.js"></script>
+    <script type="text/javascript" src="viewmodels/tdlistViewModel.js"></script>
+    <script type="text/javascript" src="logic.js"></script>
+
+</head>
+<body>
+    <!--
+    <div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Trail</th>
+                    <th>Lat Lng</th>
+                    <th>Legend</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: trails">
+                <tr>
+                    <td data-bind="text: name"></td>
+                    <td data-bind="text: latlng"></td>
+                    <td data-bind="with: legend">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td >Low Rating: </td>
+                                    <td data-bind="text: low_rating"></td>
+                                </tr>
+                                 <tr>
+                                    <td >High Rating: </td>
+                                    <td data-bind="text: high_rating"></td
+                                </tr>
+                                 <tr>
+                                    <td >Rock Crawling: </td>
+                                    <td data-bind="text: rock_crawling"></td>
+                                </tr>
+                                <tr>
+                                    <td >Climbs & Descents: </td>
+                                    <td data-bind="text: climbs_descents"></td>
+                                </tr>
+                                <tr>
+                                    <td >Water Crossing: </td>
+                                    <td data-bind="text: water_crossing"></td>
+                                </tr>
+                                <tr>
+                                    <td >Cliffs & Ledges: </td>
+                                    <td data-bind="text: cliffs_ledges"></td>
+                                </tr>
+                                <tr>
+                                    <td >Dirt & Mud: </td>
+                                    <td data-bind="text: dirt_mud"></td>
+                                </tr>
+                                <tr>
+                                    <td >Playgrounds: </td>
+                                    <td data-bind="text: playgrounds"></td>
+                                </tr>
+                                <tr>
+                                    <td >Elevation: </td>
+                                    <td data-bind="text: elevation"></td>
+                                </tr>
+                                <tr>
+                                    <td >Scenery: </td>
+                                    <td data-bind="text: scenery"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    -->
+    <div>
+        <button data-bind="click: FilterStuff">GO</button>
+        
+        <div id="navcontainer">
+            <ul>
+                <li>Low-End Rating: <select data-bind="options: [1,2,3,4,5,6,7,8,9], value: filt_low_end"></select></li>
+                <li>Trail Length: <input data-bind="value: filt_length"></input></li>
+                <li>Trail Type: <select data-bind="options: ['None','Loop','Out and Back','Straight Through','Network'], value: filt_type"></select></li>
+            </ul>
+        </div>
+        <div id="filterskills">
+            <ul>
+                <li>Rock Crawling: <select data-bind="options: [1,2,3,4,5], value: filt_rock"></select></li>
+                <li>Climbs & Descents: <select data-bind="options: [1,2,3,4,5], value: filt_climbs"></select></li>
+                <li>Water Crossings: <select data-bind="options: [1,2,3,4,5], value: filt_water"></select></li>
+                <li>Cliffs & Ledges: <select data-bind="options: [1,2,3,4,5], value: filt_cliffs"></select></li>
+                <li>Dirt & Mud: <select data-bind="options: [1,2,3,4,5], value: filt_dirt"></select></li>
+                <li>Playgrounds: <select data-bind="options: [1,2,3,4,5], value: filt_play"></select></li>
+                <li>Scenery: <select data-bind="options: [1,2,3,4,5], value: filt_scene"></select></li>
+                <li>Elevation: <select data-bind="options: [1,2,3,4,5], value: filt_elevation"></select></li>
+            </ul>
+        </div>
+    </div>
+    <div>
+        <table>
+            <tr>
+                <td>
+                    <div id="map"></div>
+                    <div id="trails" data-bind="foreach: trails"></div>
+                </td>
+                <td>
+                    <div>
+                        <table data-bind="with: selected_trail">
+                            <tr>
+                                <td>
+                                    <h1>Name: <span data-bind="text: name"></span>
+                                    </h1>
+                                    <h2>ID:  <span data-bind="text: id"></span>
+                                    </h2>
+                                    <table>
+                                        <tr>
+                                            <td>Trail Length</td>
+                                            <td><span data-bind="text: trail_length"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Trail Type</td>
+                                            <td><span data-bind="text: trail_type"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>County</td>
+                                            <td><span data-bind="text: county"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Updated</td>
+                                            <td><span data-bind="text: updated"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Elevation</td>
+                                            <td><span data-bind="text: elevation"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Nearyby Towns</td>
+                                            <td><span data-bind="text: nearby_towns"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Nearyby Trails</td>
+                                            <td><span data-bind="text: nearby_trails"></span></td>
+                                        </tr>
+
+                                    </table>
+                                </td>
+                                <td>
+                                    <h2>Last Time:  <span data-bind="text: my_last_time"></span></h2>
+                                    <p>Note: <span data-bind="text: my_note"></span></p>
+                                    <table data-bind="with: legend">
+                                        <tr>
+                                            <td>Low-End Rating</td>
+                                            <td><span data-bind="text: low_rating"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>High-End Rating</td>
+                                            <td><span data-bind="text: high_rating"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Rock Crawling</td>
+                                            <td data-bind="starRating: rock_crawling"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Climbs & Descents</td>
+                                            <td data-bind="starRating: climbs_descents"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Water Crossing</td>
+                                            <td data-bind="starRating: water_crossing"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Cliffs & Ledges</td>
+                                            <td data-bind="starRating: cliffs_ledges"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Dirt & Mud</td>
+                                            <td data-bind="starRating: dirt_mud"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Playgrounds</td>
+                                            <td data-bind="starRating: playgrounds"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Scenery</td>
+                                            <td data-bind="starRating: scenery"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Elevation</td>
+                                            <td data-bind="starRating: elevation"></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div>
+        "Lat Lng on click: "
+        <input size="50" type="text" id ="latlongclicked"/>
+    </div>
+</body>
+</html>
